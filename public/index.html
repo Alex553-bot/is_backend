@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Formulario de Registro de Platillo</title>
+</head>
+<body>
+    <form>
+        <label for="nombre">Nombre del Platillo:</label>
+        <input type="text" id="nombre" name="nombre" required>
+        <br>
+        <label for="descripcion">Descripción:</label>
+        <textarea id="descripcion" name="descripcion" required></textarea>
+        <br>
+        <label for="imagen">Imagen (JPEG, JPG o PNG):</label>
+        <input type="file" id="imagen" name="imagen" accept="image/jpeg, image/jpg, image/png" required>
+        <br>
+        <label for="video">Video (MP4):</label>
+        <input type="file" id="video" name="video" accept="video/mp4" required>
+        <br>
+        <button type="submit">Registrar Platillo</button>
+    </form>
+</body>
+</html>
