@@ -179,3 +179,28 @@ exports.eliminar_platillo = asyncHandler(async (req, res, next) => {
 		})
 	}
 });
+
+exports.buscar_platillo = asyncHandler(async (req, res) => {
+	try {
+		const titulo = req.query.titulo; 
+    	const imagen = req.query.imagen;
+		const sql = 'SELECT * FROM platillo_tipico WHERE TITULO_PLATILLO LIKE ? AND IMAGEN_PLATILLO = ?';
+  
+		const [result] = await pool.query(sql, [`%${titulo}%`, imagen]);
+  
+		if (result.length === 0) {
+			res.status(404).json({
+			message: 'No se encontraron platillos que coincidan con la búsqueda',
+			});
+		} else {
+			res.status(200).json({ result });
+		}
+	} catch (err) {
+		console.error(err);
+		res.status(500).json({
+			message: 'Error del servidor',
+			error: err,
+		});
+	}
+});
+  
