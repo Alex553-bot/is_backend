@@ -3,6 +3,9 @@ const crypto = require('crypto');
 const fs = require('fs');
 const streamifier = require('streamifier');
 
+const URI_IMG = "media/imagen/";
+const URI_VIDEO = "media/video/";
+
 const pool = require('../configuraciones/database'); 
 
 function codificar(valor) {
@@ -16,22 +19,6 @@ function decodificar(hash) {
 	} catch (err) {
 		console.log('Error en la decodificacion', err);
 		return NaN; 
-	}
-}
-
-// Función para eliminar un registro y sus archivos asociados
-function eliminarArchivoSiExiste(rutaArchivoAEliminar) {
-	console.log('Eliminando archivos');
-	if (fs.existsSync(rutaArchivoAEliminar)) {
-	  fs.unlink(rutaArchivoAEliminar, (err) => {
-		if (err) {
-		  console.error('Error al eliminar el archivo:', err);
-		} else {
-		  console.log('Archivo eliminado con éxito.');
-		}
-	  });
-	} else {
-	  console.log('El archivo no existe.');
 	}
  }
 exports.obtener_platillo = asyncHandler(async (req, res, next) => {
@@ -72,7 +59,6 @@ exports.obtener_platillo = asyncHandler(async (req, res, next) => {
 		});
 	}
 });
-
 exports.insertar_platillo = asyncHandler(async (req, res) => {
   try {
     console.log('Llega a la consulta');
@@ -117,22 +103,40 @@ exports.modificar_platillo = asyncHandler(async (req, res) => {
 				error: 'Error de decodificacion del id'
 			})
 		}
-		const {nombre, descripcion} = req.body; 
-		const imagen = req.files['imagen'].buffer; 
-		const video = req.files['video'].buffer; 
+		/* RO EDIT */
+		const sqlEdit = 'SELECT * FROM platillo_tipico WHERE ID_PLATILLO = ?'; 
+		const [data] = await pool.query(sqlEdit, id); 
+		let { URL_VIDEO, IMAGEN_PLATILLO} = data[0]
+		
+		if(data.length > 0){
+			const {nombre, descripcion} = req.body; 			
+			if(req.body.nombre_imagen != null){
+				await eliminarArchivoSiExiste(URI_IMG + IMAGEN_PLATILLO);
+				IMAGEN_PLATILLO = req.body.nombre_imagen; 
+			}
+			if(req.body.nombre_video != null){
+				await eliminarArchivoSiExiste(URI_VIDEO + URL_VIDEO);
+				URL_VIDEO = req.body.nombre_video;
+			}
+			//const sql = 'UPDATE platillo_tipico SET NOMBRE_PLATILLO = ?, DESCRCIPCION =?, IMAGEN_PLATILLO = ?, URL_VIDEO = ? WHERE ID_PLATILLO = ?'; 
+			const sql = 'UPDATE platillo_tipico SET TITULO_PLATILLO = ?, DESCRIPCION_PLATILLO =?, IMAGEN_PLATILLO = ?, URL_VIDEO = ? WHERE ID_PLATILLO = ?'; 
+			const [result] = await pool.query(sql , [nombre, descripcion, IMAGEN_PLATILLO, URL_VIDEO, id]); 
 
-		const sql = 'UPDATE platillo_tipico SET NOMBRE_PLATILLO = ?, DESCRCIPCION =?, IMAGEN_PLATILLO = ?, URL_VIDEO = ? WHERE ID_PLATILLO = ?'; 
-		const [result] = await pool.query(sql , [nombre, descripcion, imagen, video, id]); 
-
-		if (result.affectedRows >0 ) {
-			res.status(200).json({
-				message: 'Platillo modificado correctamente'
-			})
-		} else {
+			if (result.affectedRows >0 ) {
+				res.status(200).json({
+					message: 'Platillo modificado correctamente'
+				})
+			} else {
+				res.status(500).json({
+					message: 'Error en la base de datos'
+				})
+			}
+		}else{
 			res.status(500).json({
-				message: 'Error en la base de datos'
+				message: 'Error: El registro no existe'
 			})
 		}
+
 	} catch (err) {
 		console.log(err); 
 		res.status(500).json({
@@ -179,3 +183,42 @@ exports.eliminar_platillo = asyncHandler(async (req, res, next) => {
 		})
 	}
 });
+
+// Listar todos los platillos
+exports.listar = asyncHandler(async (req, res, next) => {
+	try {
+		const sql = 'SELECT * FROM platillo_tipico ORDER BY TITULO_PLATILLO'; 
+		const [result] = await pool.query(sql); 
+		if (result.length == 0) {
+			console.log('No existen platillos registrados en la base de datos.');
+			res.status(400).json({
+				message: 'No tenemos platos registrados.'
+			}); 
+		} else {			
+			res.status(200).json({result});
+		}
+	} catch (err) {
+		console.log(err);
+		res.status(500).json({
+			message: 'Error del servidor', 
+			error: err
+		});
+	}
+});
+
+// Función para eliminar un registro y sus archivos asociados
+function eliminarArchivoSiExiste(pathFileToDelete) {
+	console.log('Eliminando archivos ', pathFileToDelete);
+
+	if (fs.existsSync(pathFileToDelete)) {
+	  fs.unlink(pathFileToDelete, (err) => {
+		if (err) {
+		  console.error('Error al eliminar el archivo:', err);
+		} else {
+		  console.log('Archivo eliminado con éxito.');
+		}
+	  });
+	} else {
+	  console.log('El archivo no existe.');
+	}
+}
