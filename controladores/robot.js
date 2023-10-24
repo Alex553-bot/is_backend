@@ -225,10 +225,11 @@ function eliminarArchivoSiExiste(pathFileToDelete) {
 exports.buscar_platillo = asyncHandler(async (req, res) => {
 	try {
 		const titulo = req.query.titulo; 
-    	const imagen = req.query.imagen;
-		const sql = 'SELECT * FROM platillo_tipico WHERE TITULO_PLATILLO LIKE ? AND IMAGEN_PLATILLO = ?';
+    	//const imagen = req.query.imagen;
+		const sql = 'SELECT TITULO_PLATILLO,IMAGEN_PLATILLO FROM platillo_tipico WHERE TITULO_PLATILLO LIKE ?';
+		//AND IMAGEN_PLATILLO = ?
   
-		const [result] = await pool.query(sql, [`%${titulo}%`, imagen]);
+		const [result] = await pool.query(sql, [`%${titulo}%`]);
   
 		if (result.length === 0) {
 			res.status(404).json({
@@ -245,4 +246,6 @@ exports.buscar_platillo = asyncHandler(async (req, res) => {
 		});
 	}
 });
+  
+
   
