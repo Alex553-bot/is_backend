@@ -205,5 +205,26 @@ exports.buscar_platillo = asyncHandler(async (req, res) => {
 	}
 });
   
-
+exports.obtener_cantidad_platillos = asyncHandler(async (req, res, next) => {
+	try {
+	  const sql = 'SELECT COUNT(*) as cantidad FROM platillo_tipico';
+	  const [result] = await pool.query(sql);
+  
+	  if (result.length > 0) {
+		const cantidad = result[0].cantidad;
+		res.status(200).json({ cantidad });
+	  } else {
+		res.status(400).json({
+		  message: 'No se pudo obtener la cantidad de platillos',
+		});
+	  }
+	} catch (err) {
+	  console.error(err);
+	  res.status(500).json({
+		message: 'Error del servidor',
+		error: err,
+	  });
+	}
+  });
+  
   
