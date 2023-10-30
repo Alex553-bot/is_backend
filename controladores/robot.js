@@ -20,7 +20,24 @@ function decodificar(hash) {
 		console.log('Error en la decodificacion', err);
 		return NaN; 
 	}
- }
+}
+
+// Función para eliminar un registro y sus archivos asociados
+function eliminarArchivoSiExiste(rutaArchivoAEliminar) {
+	console.log('Eliminando archivos');
+	console.log(`La ruta del archivo es: \'${rutaArchivoAEliminar}\'`);
+	if (fs.existsSync(rutaArchivoAEliminar)) {
+	  fs.unlink(rutaArchivoAEliminar, (err) => {
+		if (err) {
+		  console.error('Error al eliminar el archivo:', err);
+		} else {
+		  console.log('Archivo eliminado con éxito.');
+		}
+	  });
+	} else {
+	  console.log('El archivo no existe.');
+	}
+}
 exports.obtener_platillo = asyncHandler(async (req, res, next) => {
 	try {
 		const id = req.params.id; 
