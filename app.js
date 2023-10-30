@@ -14,8 +14,8 @@ const app = express();
 const db = require('./configuraciones/database');
 const multer = require('./configuraciones/archivosMultimedia');
 // view engine setup
-//app.set('views', path.join(__dirname, 'views'));
-//app.set('view engine', 'jade');
+app.set('views', path.join(__dirname, 'views'));
+app.set('view engine', 'jade');
 
 app.use(logger('dev'));
 app.use(cors()); 
@@ -43,8 +43,11 @@ app.use(function(err, req, res, next) {
   res.locals.error = req.app.get('env') === 'development' ? err : {};
 
   // render the error page
+  console.log(err.message);
   res.status(err.status || 500);
-  res.render('error');
+  res.render('error',{
+    title: 'hello'
+  });
 });
 
 
