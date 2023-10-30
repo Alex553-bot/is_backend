@@ -19,5 +19,6 @@ router.delete('/eliminarPlatillo/:id', controlador.eliminar_platillo);
 router.get('/all',controlador.listar);
 router.get('/buscarPlatillo', controlador.buscar_platillo);
 router.get('/cantidadPlatillos', controlador.obtener_cantidad_platillos);
+router.get('/contarPlatillos', controlador.contarPlatillos);
 
 module.exports = router;
