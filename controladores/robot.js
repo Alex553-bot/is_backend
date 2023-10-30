@@ -22,6 +22,7 @@ function decodificar(hash) {
 // Función para eliminar un registro y sus archivos asociados
 function eliminarArchivoSiExiste(rutaArchivoAEliminar) {
 	console.log('Eliminando archivos');
+	console.log(`La ruta del archivo es: \'${rutaArchivoAEliminar}\'`);
 	if (fs.existsSync(rutaArchivoAEliminar)) {
 	  fs.unlink(rutaArchivoAEliminar, (err) => {
 		if (err) {
