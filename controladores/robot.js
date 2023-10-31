@@ -58,8 +58,8 @@ exports.obtener_platillo = asyncHandler(async (req, res, next) => {
         id: id_codificado,
         nombre: platillo.titulo_platillo,
         descripcion: platillo.descripcion_platillo,
-        imagen: URI_IMG + platillo.imagen_platillo, // Utiliza URI_IMG
-        video: URI_VIDEO + platillo.url_video, // Utiliza URI_VIDEO
+        imagen: platillo.imagen_platillo, 
+        video: platillo.url_video, 
       };
       res.json({ respuesta });
     } else {
@@ -127,7 +127,7 @@ exports.modificar_platillo = asyncHandler(async (req, res) => {
     }
 
     const sql = 'UPDATE platillo_tipico SET titulo_platillo = $1, descripcion_platillo = $2, imagen_platillo = $3, url_video = $4 WHERE id_platillo = $5';
-    const result = await db.none(sql, [nombre, descripcion, URI_IMG + IMAGEN_PLATILLO, URI_VIDEO + URL_VIDEO, id]); // Utiliza URI_IMG y URI_VIDEO
+    const result = await db.none(sql, [nombre, descripcion, IMAGEN_PLATILLO, URL_VIDEO, id]); // Utiliza URI_IMG y URI_VIDEO
 
     if (result) {
       res.status(200).json({
@@ -236,28 +236,6 @@ exports.buscar_platillo = asyncHandler(async (req, res) => {
       });
     } else {
       res.status(200).json({ result });
-    }
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({
-      message: 'Error del servidor',
-      error: err,
-    });
-  }
-});
-
-exports.obtener_cantidad_platillos = asyncHandler(async (req, res, next) => {
-  try {
-    const sql = 'SELECT COUNT(*) as cantidad FROM platillo_tipico';
-    const result = await db.query(sql);
-
-    if (result.length > 0) {
-      const cantidad = result[0].cantidad;
-      res.status(200).json({ cantidad });
-    } else {
-      res.status(400).json({
-        message: 'No se pudo obtener la cantidad de platillos',
-      });
     }
   } catch (err) {
     console.error(err);
