@@ -182,12 +182,13 @@ exports.eliminar_platillo = asyncHandler(async (req, res, next) => {
 
 exports.buscar_platillo = asyncHandler(async (req, res) => {
 	try {
+		const id = req.params.id
 		const titulo = req.query.titulo; 
     	//const imagen = req.query.imagen;
-		const sql = 'SELECT TITULO_PLATILLO,IMAGEN_PLATILLO FROM platillo_tipico WHERE TITULO_PLATILLO LIKE ?';
+		const sql = 'SELECT ID_PLATILLO, TITULO_PLATILLO, IMAGEN_PLATILLO FROM platillo_tipico WHERE ID_PLATILLO = ? AND TITULO_PLATILLO LIKE ?';
 		//AND IMAGEN_PLATILLO = ?
   
-		const [result] = await pool.query(sql, [`%${titulo}%`]);
+		const [result] = await pool.query(sql, [id, `%${titulo}%`]);
   
 		if (result.length === 0) {
 			res.status(404).json({
