@@ -1,4 +1,4 @@
 const pgp = require('pg-promise')();
 
-const db = pgp(':D');
+const db = pgp('');
 module.exports = db;

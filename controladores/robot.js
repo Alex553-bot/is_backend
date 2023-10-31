@@ -21,7 +21,7 @@ function decodificar(hash) {
   }
 }
 
-// Función para eliminar un registro y sus archivos asociados
+// Función para eliminar un archivo si existe
 function eliminarArchivoSiExiste(pathFileToDelete) {
   console.log('Eliminando archivos', pathFileToDelete);
 
@@ -58,8 +58,8 @@ exports.obtener_platillo = asyncHandler(async (req, res, next) => {
         id: id_codificado,
         nombre: platillo.titulo_platillo,
         descripcion: platillo.descripcion_platillo,
-        imagen: platillo.imagen_platillo,
-        video: platillo.url_video,
+        imagen: URI_IMG + platillo.imagen_platillo, // Utiliza URI_IMG
+        video: URI_VIDEO + platillo.url_video, // Utiliza URI_VIDEO
       };
       res.json({ respuesta });
     } else {
@@ -127,7 +127,7 @@ exports.modificar_platillo = asyncHandler(async (req, res) => {
     }
 
     const sql = 'UPDATE platillo_tipico SET titulo_platillo = $1, descripcion_platillo = $2, imagen_platillo = $3, url_video = $4 WHERE id_platillo = $5';
-    const result = await db.none(sql, [nombre, descripcion, IMAGEN_PLATILLO, URL_VIDEO, id]);
+    const result = await db.none(sql, [nombre, descripcion, URI_IMG + IMAGEN_PLATILLO, URI_VIDEO + URL_VIDEO, id]); // Utiliza URI_IMG y URI_VIDEO
 
     if (result) {
       res.status(200).json({
@@ -159,8 +159,8 @@ exports.eliminar_platillo = asyncHandler(async (req, res, next) => {
     if (data) {
       const nombreImagen = data.imagen_platillo;
       const nombreVideo = data.url_video;
-      const imagenAEliminar = `media/imagen/${nombreImagen}`;
-      const videoAEliminar = `media/video/${nombreVideo}`;
+      const imagenAEliminar = URI_IMG + nombreImagen; // Utiliza URI_IMG
+      const videoAEliminar = URI_VIDEO + nombreVideo; // Utiliza URI_VIDEO
       eliminarArchivoSiExiste(imagenAEliminar);
       eliminarArchivoSiExiste(videoAEliminar);
 
@@ -187,7 +187,7 @@ exports.eliminar_platillo = asyncHandler(async (req, res, next) => {
 exports.listar = asyncHandler(async (req, res, next) => {
   try {
     const sql = 'SELECT * FROM platillo_tipico ORDER BY titulo_platillo';
-    const result = await pool.query(sql);
+    const result = await db.query(sql);
 
     if (result.length == 0) {
       console.log('No existen platillos registrados en la base de datos.');
@@ -209,7 +209,7 @@ exports.listar = asyncHandler(async (req, res, next) => {
 exports.contarPlatillos = asyncHandler(async (req, res, next) => {
   try {
     const sql = 'SELECT COUNT(*) AS total_platillos FROM platillo_tipico';
-    const result = await pool.query(sql);
+    const result = await db.query(sql);
 
     const totalPlatillos = result[0].total_platillos;
 
@@ -228,7 +228,7 @@ exports.buscar_platillo = asyncHandler(async (req, res) => {
     const titulo = req.query.titulo;
     const sql = 'SELECT titulo_platillo, imagen_platillo FROM platillo_tipico WHERE titulo_platillo LIKE $1';
 
-    const result = await pool.query(sql, [`%${titulo}%`]);
+    const result = await db.query(sql, [`%${titulo}%`]);
 
     if (result.length === 0) {
       res.status(404).json({
@@ -249,7 +249,7 @@ exports.buscar_platillo = asyncHandler(async (req, res) => {
 exports.obtener_cantidad_platillos = asyncHandler(async (req, res, next) => {
   try {
     const sql = 'SELECT COUNT(*) as cantidad FROM platillo_tipico';
-    const result = await pool.query(sql);
+    const result = await db.query(sql);
 
     if (result.length > 0) {
       const cantidad = result[0].cantidad;
