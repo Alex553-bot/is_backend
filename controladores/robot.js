@@ -4,27 +4,21 @@ const fs = require('fs');
 const URI_IMG = "media/imagen/";
 const URI_VIDEO = "media/video/";
 
-const db = require('../configuraciones/database'); // Cambia la importación de la conexión a PostgreSQL
+const db = require('../configuraciones/database'); 
 
 function codificar(valor) {
   return valor.toString();
 }
-
 function decodificar(hash) {
   try {
     const valor = parseFloat(hash);
-    console.log(valor);
     return valor;
   } catch (err) {
     console.log('Error en la decodificación', err);
     return NaN;
   }
 }
-
-// Función para eliminar un archivo si existe
 function eliminarArchivoSiExiste(pathFileToDelete) {
-  console.log('Eliminando archivos', pathFileToDelete);
-
   if (fs.existsSync(pathFileToDelete)) {
     fs.unlink(pathFileToDelete, (err) => {
       if (err) {
@@ -73,18 +67,15 @@ exports.obtener_platillo = asyncHandler(async (req, res, next) => {
     });
   }
 });
-
 exports.insertar_platillo = asyncHandler(async (req, res) => {
   try {
-    console.log('Llega a la consulta');
     const nombre = req.body.nombre;
     const descripcion = req.body.descripcion;
     const nombreImagen = req.files['imagen'][0].originalname.replace(/\s\s+/g, ''); // Nombre del archivo de imagen
     const nombreVideo = req.files['video'][0].originalname.replace(/\s\s+/g, '');
     const rutaImagen = req.body.nombre_imagen; // Ruta completa de la imagen
     const rutaVideo = req.body.nombre_video; // Ruta completa del video
-    console.log(rutaImagen);
-    console.log(rutaVideo);
+
     const query =
       'INSERT INTO platillo_tipico(titulo_platillo, descripcion_platillo, imagen_platillo, url_video) VALUES($1, $2, $3, $4)';
 
@@ -101,7 +92,6 @@ exports.insertar_platillo = asyncHandler(async (req, res) => {
     });
   }
 });
-
 exports.modificar_platillo = asyncHandler(async (req, res) => {
   try {
     let id = req.params.id;
@@ -116,18 +106,16 @@ exports.modificar_platillo = asyncHandler(async (req, res) => {
     const { nombre, descripcion } = req.body;
 
     if (req.body.nombre_imagen != null) {
-      // Elimina la imagen existente si se va a actualizar
       eliminarArchivoSiExiste(URI_IMG + IMAGEN_PLATILLO);
       IMAGEN_PLATILLO = req.body.nombre_imagen;
     }
     if (req.body.nombre_video != null) {
-      // Elimina el video existente si se va a actualizar
       eliminarArchivoSiExiste(URI_VIDEO + URL_VIDEO);
       URL_VIDEO = req.body.nombre_video;
     }
 
     const sql = 'UPDATE platillo_tipico SET titulo_platillo = $1, descripcion_platillo = $2, imagen_platillo = $3, url_video = $4 WHERE id_platillo = $5';
-    const result = await db.none(sql, [nombre, descripcion, IMAGEN_PLATILLO, URL_VIDEO, id]); // Utiliza URI_IMG y URI_VIDEO
+    const result = await db.none(sql, [nombre, descripcion, IMAGEN_PLATILLO, URL_VIDEO, id]); 
 
     if (result) {
       res.status(200).json({
@@ -146,12 +134,11 @@ exports.modificar_platillo = asyncHandler(async (req, res) => {
     });
   }
 });
-
 exports.eliminar_platillo = asyncHandler(async (req, res, next) => {
   try {
     let id = req.params.id;
     id = decodificar(id);
-    // Eliminar archivo
+
     const sql1 = 'SELECT imagen_platillo, url_video FROM platillo_tipico WHERE id_platillo = $1';
 
     const data = await db.oneOrNone(sql1, id); // Usa db.oneOrNone en lugar de db.one
@@ -182,8 +169,6 @@ exports.eliminar_platillo = asyncHandler(async (req, res, next) => {
     });
   }
 });
-
-// Listar todos los platillos
 exports.listar = asyncHandler(async (req, res, next) => {
   try {
     const sql = 'SELECT * FROM platillo_tipico ORDER BY titulo_platillo';
@@ -222,7 +207,6 @@ exports.contarPlatillos = asyncHandler(async (req, res, next) => {
     });
   }
 });
-
 exports.buscar_platillo = asyncHandler(async (req, res) => {
   try {
     const titulo = req.query.titulo;
@@ -243,5 +227,18 @@ exports.buscar_platillo = asyncHandler(async (req, res) => {
       message: 'Error del servidor',
       error: err,
     });
+  }
+});
+exports.obtener_posicion = asyncHandler(async (req, res) => {
+  const platilloId = req.params.id;
+  try {
+    const platillo = await db.one('SELECT titulo_platillo FROM platillo_tipico WHERE id_platillo = $1', [platilloId]);
+
+    const posicion = await db.one('SELECT COUNT(*) FROM platillo_tipico WHERE titulo_platillo <= $1', [platillo.titulo_platillo]);
+
+    res.status(200).json({ posicion: posicion.count });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Error interno del servidor' });
   }
 });
