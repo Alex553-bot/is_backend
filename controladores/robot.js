@@ -211,7 +211,7 @@ exports.buscar_platillo = asyncHandler(async (req, res) => {
   try {
     const titulo = req.query.titulo;
     //const sql = 'SELECT titulo_platillo, imagen_platillo FROM platillo_tipico WHERE titulo_platillo LIKE $1';
-    const sql = 'SELECT titulo_platillo, imagen_platillo, similarity(titulo_platillo, $1) AS similitud FROM platillo_tipico WHERE similarity(titulo_platillo, $1) > 0.2 ORDER BY similitud DESC';
+    const sql = 'SELECT id_platillo, titulo_platillo, imagen_platillo, similarity(titulo_platillo, $1) AS similitud FROM platillo_tipico WHERE similarity(titulo_platillo, $1) > 0.2 ORDER BY similitud DESC';
 
     const result = await db.query(sql, [`%${titulo}%`]);
     console.log(titulo);
