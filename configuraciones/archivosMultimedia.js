@@ -23,6 +23,7 @@ const storage = multer.diskStorage({
       req.body.nombre_video = name;
     }  
     cb(null, name);
+    return name
   },
 });
 
