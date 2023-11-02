@@ -102,7 +102,11 @@ exports.modificar_platillo = asyncHandler(async (req, res) => {
         error: 'Error de decodificación del id',
       });
     }
+    const sql1 = 'SELECT imagen_platillo, url_video FROM platillo_tipico WHERE id_platillo = $1';
+    const res1 = await db.one(sql1, [id]);
 
+    let URL_VIDEO = res1.url_video; 
+    let IMAGEN_PLATILLO = res1.imagen_platillo;
     const { nombre, descripcion } = req.body;
 
     if (req.body.nombre_imagen != null) {
@@ -115,13 +119,14 @@ exports.modificar_platillo = asyncHandler(async (req, res) => {
     }
 
     const sql = 'UPDATE platillo_tipico SET titulo_platillo = $1, descripcion_platillo = $2, imagen_platillo = $3, url_video = $4 WHERE id_platillo = $5';
-    const result = await db.none(sql, [nombre, descripcion, IMAGEN_PLATILLO, URL_VIDEO, id]); 
+    const result = await db.query(sql, [nombre, descripcion, IMAGEN_PLATILLO, URL_VIDEO, id]); 
 
     if (result) {
       res.status(200).json({
         message: 'Platillo modificado correctamente',
       });
     } else {
+      console.log('base de datos');
       res.status(500).json({
         message: 'Error en la base de datos',
       });
@@ -211,8 +216,13 @@ exports.buscar_platillo = asyncHandler(async (req, res) => {
   try {
     const titulo = req.query.titulo;
     //const sql = 'SELECT titulo_platillo, imagen_platillo FROM platillo_tipico WHERE titulo_platillo LIKE $1';
-    const sql = 'SELECT id_platillo, titulo_platillo, imagen_platillo, similarity(titulo_platillo, $1) AS similitud FROM platillo_tipico WHERE similarity(titulo_platillo, $1) > 0.2 ORDER BY similitud DESC';
-
+const sql = `
+  SELECT id_platillo, titulo_platillo, imagen_platillo, similarity(titulo_platillo, $1) AS similitud
+  FROM platillo_tipico
+  WHERE similarity(titulo_platillo, $1) > 0.6
+  OR titulo_platillo ILIKE '%' || $1 || '%'
+  ORDER BY similitud DESC
+`;
     const result = await db.query(sql, [`%${titulo}%`]);
     console.log(titulo);
 
