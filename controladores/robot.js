@@ -150,7 +150,7 @@ exports.eliminar_platillo = asyncHandler(async (req, res, next) => {
 	try {
 		let id = req.params.id; 
 		id = decodificar(id);
-		//eliminar archivo
+		//eliminar archivo tanto imagen como video para poder reañizar una mejor edicion 
 		const sql1 = 'SELECT IMAGEN_PLATILLO,URL_VIDEO FROM platillo_tipico WHERE ID_PLATILLO = ?'; 
 		const [data] = await pool.query(sql1, id); 
 		const sql2 = 'DELETE FROM platillo_tipico WHERE ID_PLATILLO = ?'
