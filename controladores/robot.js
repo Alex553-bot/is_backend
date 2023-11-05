@@ -152,14 +152,11 @@ exports.eliminar_platillo = asyncHandler(async (req, res, next) => {
 		id = decodificar(id);
 		//eliminar archivo
 		const sql1 = 'SELECT IMAGEN_PLATILLO,URL_VIDEO FROM platillo_tipico WHERE ID_PLATILLO = ?'; 
-
 		const [data] = await pool.query(sql1, id); 
-
 		const sql2 = 'DELETE FROM platillo_tipico WHERE ID_PLATILLO = ?'
 		const [result] = await pool.query(sql2 , [id]); 
 		
 		if (result.affectedRows >0 ) {
-
 			const nombreImagen = data[0].IMAGEN_PLATILLO;
 			const nombreVideo = data[0].URL_VIDEO;
 			//cambiar por la ruta de la imagen
@@ -204,10 +201,9 @@ exports.listar = asyncHandler(async (req, res, next) => {
 		});
 	}
 });
-// Función para eliminar un registro y sus archivos asociados
+// Función para eliminar un registro y sus archivos asociados con las imagenes para no tener conflictos
 function eliminarArchivoSiExiste(pathFileToDelete) {
 	console.log('Eliminando archivos ', pathFileToDelete);
-
 	if (fs.existsSync(pathFileToDelete)) {
 	  fs.unlink(pathFileToDelete, (err) => {
 		if (err) {
