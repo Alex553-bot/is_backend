@@ -183,7 +183,6 @@ exports.eliminar_platillo = asyncHandler(async (req, res, next) => {
 		})
 	}
 });
-
 // Listar todos los platillos
 exports.listar = asyncHandler(async (req, res, next) => {
 	try {
@@ -205,21 +204,6 @@ exports.listar = asyncHandler(async (req, res, next) => {
 		});
 	}
 });
-exports.contarPlatillos = asyncHandler(async (req, res, next) => {
-    try {
-        const sql = 'SELECT COUNT(*) AS total_platillos FROM platillo_tipico';
-        const [result] = await pool.query(sql);
-        const totalPlatillos = result[0].total_platillos;
-        res.status(200).json({ total_platillos: totalPlatillos });
-    } catch (err) {
-        console.log(err);
-        res.status(500).json({
-            message: 'Error del servidor',
-            error: err
-        });
-    }
-});
-
 // Función para eliminar un registro y sus archivos asociados
 function eliminarArchivoSiExiste(pathFileToDelete) {
 	console.log('Eliminando archivos ', pathFileToDelete);
