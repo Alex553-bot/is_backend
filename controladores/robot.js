@@ -21,6 +21,8 @@ function decodificar(hash) {
 		return NaN; 
 	}
  }
+//funcionalidad para poder listar todos los platillos con sus respectios nombre y descricion y sus archivos multimedia como ser foto y video  
+
 exports.obtener_platillo = asyncHandler(async (req, res, next) => {
 	try {
 		const id = req.params.id; 
@@ -136,7 +138,6 @@ exports.modificar_platillo = asyncHandler(async (req, res) => {
 				message: 'Error: El registro no existe'
 			})
 		}
-
 	} catch (err) {
 		console.log(err); 
 		res.status(500).json({
