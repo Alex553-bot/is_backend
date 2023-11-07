@@ -222,29 +222,33 @@ exports.obtener_cantidad_platillos = asyncHandler(async (req, res, next) => {
   }
 });
 exports.buscar_platillo = asyncHandler(async (req, res) => {
-	try {
-		const id = req.params.id
-		const titulo = req.query.titulo; 
-    	//const imagen = req.query.imagen;
-		const sql = 'SELECT ID_PLATILLO, TITULO_PLATILLO, IMAGEN_PLATILLO FROM platillo_tipico WHERE ID_PLATILLO = ? AND TITULO_PLATILLO LIKE ?';
-		//AND IMAGEN_PLATILLO = ?
-  
-		const [result] = await pool.query(sql, [id, `%${titulo}%`]);
-  
-		if (result.length === 0) {
-			res.status(404).json({
-			message: 'No se encontraron platillos que coincidan con la búsqueda',
-			});
-		} else {
-			res.status(200).json({ result });
-		}
-	} catch (err) {
-		console.error(err);
-		res.status(500).json({
-			message: 'Error del servidor',
-			error: err,
-		});
-	}
+  try {
+    const titulo = req.query.titulo;
+    //const sql = 'SELECT titulo_platillo, imagen_platillo FROM platillo_tipico WHERE titulo_platillo LIKE $1';
+    const sql = `
+      SELECT id_platillo, titulo_platillo, imagen_platillo, similarity(titulo_platillo, $1) AS similitud
+      FROM platillo_tipico
+      WHERE similarity(titulo_platillo, $1) > 0.6
+      OR titulo_platillo ILIKE '%' || $1 || '%'
+      ORDER BY similitud DESC
+    `;
+    const result = await db.query(sql, [`%${titulo}%`]);
+    console.log(titulo);
+
+    if (result.length === 0) {
+      res.status(404).json({
+        message: 'No se encontraron platillos que coincidan con la búsqueda',
+      });
+    } else {
+      res.status(200).json({ result });
+    }
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({
+      message: 'Error del servidor',
+      error: err,
+    });
+  }
 });
 exports.obtener_posicion = asyncHandler(async (req, res) => {
   const platilloId = req.params.id;
