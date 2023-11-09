@@ -15,8 +15,10 @@ router.post('/registrarPlatillo', upload, controlador.insertar_platillo);
 
 router.put('/modificarPlatillo/:id', upload, controlador.modificar_platillo); 
 router.delete('/eliminarPlatillo/:id', controlador.eliminar_platillo); 
-//
+
 router.get('/all',controlador.listar);
-router.get('/contarPlatillos', controlador.contarPlatillos);
+router.get('/buscarPlatillo', controlador.buscar_platillo);
+router.get('/contarPlatillos', controlador.obtener_cantidad_platillos);
+router.get('/obtener_pagina/:id', controlador.obtener_posicion);
 
 module.exports = router;
