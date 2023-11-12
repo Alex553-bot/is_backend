@@ -1,5 +1,8 @@
 const asyncHandler = require('express-async-handler');
 const fs = require('fs');
+const jwt = require('jsonwebtoken');
+require('dotenv').config();
+const jwtSecret = process.env.JWT_SECRET;
 
 const URI_IMG = "media/imagen/";
 const URI_VIDEO = "media/video/";
@@ -10,15 +13,27 @@ function codificar(valor) {
   return valor.toString();
 }
 function decodificar(hash) {
-	try {
-		const valor = parseFloat(hash);
-		console.log(valor);
-		return valor; 
-	} catch (err) {
-		console.log('Error en la decodificacion', err);
-		return NaN; 
-	}
- }
+  try {
+    const valor = parseFloat(hash);
+    return valor;
+  } catch (err) {
+    console.log('Error en la decodificación', err);
+    return NaN;
+  }
+}
+function eliminarArchivoSiExiste(pathFileToDelete) {
+  if (fs.existsSync(pathFileToDelete)) {
+    fs.unlink(pathFileToDelete, (err) => {
+      if (err) {
+        console.error('Error al eliminar el archivo:', err);
+      } else {
+        console.log('Archivo eliminado con éxito.');
+      }
+    });
+  } else {
+    console.log('El archivo no existe.');
+  }
+}
 exports.obtener_platillo = asyncHandler(async (req, res, next) => {
   try {
     const id = req.params.id;
@@ -218,19 +233,70 @@ exports.contarPlatillos = asyncHandler(async (req, res, next) => {
     }
 });
 
-// Función para eliminar un registro y sus archivos asociados
-function eliminarArchivoSiExiste(pathFileToDelete) {
-	console.log('Eliminando archivos ', pathFileToDelete);
 
-	if (fs.existsSync(pathFileToDelete)) {
-	  fs.unlink(pathFileToDelete, (err) => {
-		if (err) {
-		  console.error('Error al eliminar el archivo:', err);
-		} else {
-		  console.log('Archivo eliminado con éxito.');
-		}
-	  });
-	} else {
-	  console.log('El archivo no existe.');
-	}
-}
+exports.login = (req, res) => {
+  const { email, password } = req.body;
+  const consult = 'SELECT * FROM usuario WHERE email = $1 AND password = $2';
+
+  db.query(consult, [email, password])
+    .then(result => {
+      if (result && result.length > 0) {
+        const token = jwt.sign({ email }, jwtSecret, {
+          expiresIn: '15m',
+        });
+        res.send({ token });
+      } else {
+        console.log('Usuario incorrecto');
+        res.send({ message: 'Usuario incorrecto' });
+      }
+    })
+    .catch(error => {
+      console.error(error);
+      res.status(500).send({ message: 'Error en el servidor' });
+    });
+};
+
+exports.buscar_platillo = asyncHandler(async (req, res) => {
+  try {
+    const titulo = req.query.titulo;
+    //const sql = 'SELECT titulo_platillo, imagen_platillo FROM platillo_tipico WHERE titulo_platillo LIKE $1';
+    const sql = `
+      SELECT id_platillo, titulo_platillo, imagen_platillo, similarity(titulo_platillo, $1) AS similitud
+      FROM platillo_tipico
+      WHERE similarity(titulo_platillo, $1) > 0.6
+      OR titulo_platillo ILIKE '%' || $1 || '%'
+      ORDER BY similitud DESC
+    `;
+    const result = await db.query(sql, [`%${titulo}%`]);
+    console.log(titulo);
+
+    if (result.length === 0) {
+      res.status(404).json({
+        message: 'No se encontraron platillos que coincidan con la búsqueda',
+      });
+    } else {
+      res.status(200).json({ result });
+    }
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({
+      message: 'Error del servidor',
+      error: err,
+    });
+  }
+});
+exports.obtener_posicion = asyncHandler(async (req, res) => {
+  const platilloId = req.params.id;
+  try {
+    const platillo = await db.one('SELECT titulo_platillo FROM platillo_tipico WHERE id_platillo = $1', [platilloId]);
+
+    const posicion = await db.one('SELECT COUNT(*) FROM platillo_tipico WHERE titulo_platillo <= $1', [platillo.titulo_platillo]);
+
+    res.status(200).json({ posicion: posicion.count });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Error interno del servidor' });
+  }
+});
+
+>>>>>>> Stashed changes
