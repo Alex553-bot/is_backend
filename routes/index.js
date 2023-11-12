@@ -3,6 +3,7 @@ const router = express.Router();
 
 const controlador = require('../controladores/robot'); 
 const upload = require('../configuraciones/archivosMultimedia');
+const validarToken = require('../controladores/validarToken')
 
 router.get('/', (req, res) => {
     res.redirect('/registrarPlatillo');
@@ -17,5 +18,7 @@ router.put('/modificarPlatillo/:id', upload, controlador.modificar_platillo);
 router.delete('/eliminarPlatillo/:id', controlador.eliminar_platillo); 
 router.get('/buscarPlatillo/:id', controlador.buscar_platillo);
 router.get('/cantidadPlatillos', controlador.obtener_cantidad_platillos);
+router.post('/login' , controlador.login);
+router.post('/registro', controlador.registro_usuario);
 
 module.exports = router;

@@ -1,5 +1,8 @@
 const asyncHandler = require('express-async-handler');
 const fs = require('fs');
+const jwt = require('jsonwebtoken');
+require('dotenv').config();
+const jwtSecret = process.env.JWT_SECRET;
 
 const URI_IMG = "media/imagen/";
 const URI_VIDEO = "media/video/";
@@ -257,5 +260,67 @@ exports.obtener_posicion = asyncHandler(async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Error interno del servidor' });
+  }
+});
+
+exports.login = asyncHandler(async (req, res) => {
+  const { email, password } = req.body;
+  const consult = 'SELECT id, email, password, rol FROM usuario WHERE email = $1 AND password = $2';
+
+  try {
+    const result = await db.oneOrNone(consult, [email, password]);
+
+    if (result) {
+      const { id, email, rol } = result;
+      
+      // Verificar si el usuario tiene el rol de "administrador"
+      const isAdmin = rol === 'administrador';
+
+      // Puedes personalizar la duración del token según el rol si lo deseas
+      const expiresIn = '15m';
+
+      const token = jwt.sign({ id, email, rol }, jwtSecret, {
+        expiresIn,
+      });
+
+      res.json({ token });
+    } else {
+      console.log('Credenciales incorrectas');
+      res.status(401).json({ message: 'Credenciales incorrectas' });
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Error en el servidor' });
+  }
+});
+
+
+exports.registro_usuario = asyncHandler(async (req, res) => {
+  try {
+    const { id, username, email, password } = req.body;
+
+    // Verificar si ya hay un administrador registrado
+    const adminExistente = await db.oneOrNone('SELECT id FROM usuario WHERE rol = $1', 'administrador');
+    
+    let rol = 'cliente'; // Asignar por defecto el rol "cliente"
+
+    // Si no hay un administrador registrado, asignar el rol "administrador"
+    if (!adminExistente) {
+      rol = 'administrador';
+    }
+
+    // Insertar nuevo usuario
+    const query = 'INSERT INTO usuario(id, username, email, password, rol) VALUES($1, $2, $3, $4, $5)';
+    await db.none(query, [id, username, email, password, rol]);
+
+    res.status(201).json({
+      message: 'Usuario registrado correctamente',
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({
+      message: 'Error con el servidor',
+      error: err,
+    });
   }
 });
