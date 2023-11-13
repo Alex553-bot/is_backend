@@ -11,13 +11,16 @@ router.get('/', (req, res) => {
 router.get('/registrarPlatillo', (req, res) => {
     res.sendFile(__dirname+'/index.html');
 });
-router.get('/mostrarPlatillos/page/:id', controlador.obtener_platillo); 
-router.post('/registrarPlatillo', upload, controlador.insertar_platillo); 
+router.get('/mostrarPlatillos/page/:id',validarToken, controlador.obtener_platillo); 
+router.post('/registrarPlatillo',validarToken, upload, controlador.insertar_platillo); 
 
-router.put('/modificarPlatillo/:id', upload, controlador.modificar_platillo); 
-router.delete('/eliminarPlatillo/:id', controlador.eliminar_platillo); 
-router.get('/buscarPlatillo/:id', controlador.buscar_platillo);
-router.get('/cantidadPlatillos', controlador.obtener_cantidad_platillos);
+router.put('/modificarPlatillo/:id',validarToken, upload, controlador.modificar_platillo); 
+router.delete('/eliminarPlatillo/:id',validarToken, controlador.eliminar_platillo); 
+
+router.get('/all',validarToken,controlador.listar);
+router.get('/buscarPlatillo',validarToken, controlador.buscar_platillo);
+router.get('/contarPlatillos',validarToken, controlador.obtener_cantidad_platillos);
+router.get('/obtener_pagina/:id',validarToken, controlador.obtener_posicion);
 router.post('/login' , controlador.login);
 router.post('/registro', controlador.registro_usuario);
 
