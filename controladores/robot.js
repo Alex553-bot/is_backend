@@ -17,7 +17,7 @@ function decodificar(hash) {
     const valor = parseFloat(hash);
     return valor;
   } catch (err) {
-    console.log('Error en la decodificación', err);
+    console.log(' Error en la decodificación ', err);
     return NaN;
   }
 }
@@ -233,27 +233,37 @@ exports.contarPlatillos = asyncHandler(async (req, res, next) => {
     }
 });
 
-
-exports.login = (req, res) => {
+//agregar tokens al inicio de sesion
+exports.login = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
-  const consult = 'SELECT * FROM usuario WHERE email = $1 AND password = $2';
+  const consult = 'SELECT id, email, password, rol FROM usuario WHERE email = $1 AND password = $2';
 
-  db.query(consult, [email, password])
-    .then(result => {
-      if (result && result.length > 0) {
-        const token = jwt.sign({ email }, jwtSecret, {
-          expiresIn: '15m',
-        });
-        res.send({ token });
-      } else {
-        console.log('Usuario incorrecto');
-        res.send({ message: 'Usuario incorrecto' });
-      }
-    })
-    .catch(error => {
-      console.error(error);
-      res.status(500).send({ message: 'Error en el servidor' });
-    });
+  try {
+    const result = await db.oneOrNone(consult, [email, password]);
+
+    if (result) {
+      const { id, email, rol } = result;
+      
+      // Verificar si el usuario tiene el rol de "administrador"
+      const isAdmin = rol === 'administrador';
+
+      // Puedes personalizar la duración del token según el rol si lo deseas
+      const expiresIn = '15m';
+
+      const token = jwt.sign({ id, email, rol }, jwtSecret, {
+        expiresIn,
+      });
+
+      res.json({ token });
+    } else {
+      console.log('Credenciales incorrectas');
+      res.status(401).json({ message: 'Credenciales incorrectas' });
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Error en el servidor' });
+  }
+});
 };
 
 exports.buscar_platillo = asyncHandler(async (req, res) => {
