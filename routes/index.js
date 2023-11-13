@@ -21,4 +21,7 @@ router.get('/buscarPlatillo', controlador.buscar_platillo);
 router.get('/contarPlatillos', controlador.obtener_cantidad_platillos);
 router.get('/obtener_pagina/:id', controlador.obtener_posicion);
 
+router.get('/obtenerCalificacion/:id', controlador.obtenerCalificacion); 
+router.put('/actualizarCalificacion/:id', controlador.actualizarCalificacion);
+router.get('/obtenerPlatillosCalificados', controlador.obtenerPlatillosCalificados);
 module.exports = router;

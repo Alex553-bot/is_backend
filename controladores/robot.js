@@ -263,3 +263,54 @@ exports.obtener_posicion = asyncHandler(async (req, res) => {
     res.status(500).json({ error: 'Error interno del servidor' });
   }
 });
+
+exports.obtenerCalificacion = asyncHandler (async (req, res) => {
+  try {
+    const user_id = req.session.userID; 
+    const id = req.params.id;  // id del platillo
+    const sql = 'SELECT from calificacion where id_usuario = $1 and id_platillo = $2';
+    const [result] = db.query(sql, [user_id, id]);
+    if (result.rows.length>0) {
+      res.status(200).json({ok : 1});
+    } else {
+      res.status(200).json({ok: 0});
+    }
+  } catch (err) {
+    console.log(err); 
+    res.status(500).json({error: 'Error al obtener la calificacion o reaccion del platillo'});
+  }
+});
+exports.actualizarCalificacion = asyncHandler (async (req, res) => {
+  try {
+    if (req.session == null) {
+      res.status(400).json({message: 'Forbidden'});
+      return;
+    }
+    const id = req.params.id; // id del platillo
+    const user = req.session.userID;
+
+    const [aux] = db.query('SELECT from calificacion where id_usuario = $1 and id_platillo = $2', 
+      [user, id]);
+    let sql = 'insert into calificacion (id_user, id_platillo) values ($1, $2)';
+    if (aux.rows.length> 0) {
+      sql = 'delete from calificacion where id_usuario = $1 and id_platillo = $2';
+    } 
+    const [result] = db.query(sql, [user, id]);
+    res.status(200).json({message: 'modificado correctamente'});
+
+  } catch (err) {
+    console(err);
+    res.status(500).json({message: 'Error en el servidor'});
+  }
+});
+exports.obtenerPlatillosCalificados = asyncHandler (async (req, res) => {
+  try {
+    const user_id = req.session.userID; 
+    const sql = 'select * from platillo_tipico where id_platillo in (select id_platillo from calificacion where id_usuario = $1)'
+    const [result] = db.query(sql, [user_id]);
+    res.status(200).json(result.rows);
+  } catch (err) {
+    console.log(err); 
+    res.status(500).json({message: 'Error en el servidor'})
+  }
+});
