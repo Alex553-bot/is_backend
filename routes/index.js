@@ -22,6 +22,7 @@ router.get('/buscarPlatillo',validarToken, controlador.buscar_platillo);
 router.get('/contarPlatillos',validarToken, controlador.contarPlatillos);
 router.get('/obtener_pagina/:id',validarToken, controlador.obtener_posicion);
 router.post('/login' , controlador.login);
+router.post('/registro', controlador.registro_usuario);
 
 router.get('/obtenerCalificacion/:id', validarToken, controlador.obtenerCalificacion); 
 router.put('/actualizarCalificacion/:id',validarToken, controlador.actualizarCalificacion);
