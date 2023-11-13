@@ -23,4 +23,8 @@ router.get('/contarPlatillos',validarToken, controlador.contarPlatillos);
 router.get('/obtener_pagina/:id',validarToken, controlador.obtener_posicion);
 router.post('/login' , controlador.login);
 
+router.get('/obtenerCalificacion/:id', validarToken, controlador.obtenerCalificacion); 
+router.put('/actualizarCalificacion/:id',validarToken, controlador.actualizarCalificacion);
+router.get('/obtenerPlatillosCalificados', validarToken, controlador.obtenerPlatillosCalificados);
+router.get('/obtenerEstadisticas', validarToken, controlador.obtenerEstadisticas);
 module.exports = router;

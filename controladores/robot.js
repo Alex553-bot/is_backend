@@ -301,3 +301,78 @@ exports.obtener_posicion = asyncHandler(async (req, res) => {
     res.status(500).json({ error: 'Error interno del servidor' });
   }
 });
+
+exports.obtenerCalificacion = asyncHandler (async (req, res) => {
+  try {
+    console.log(req.user);
+    const user_id = req.user.id; 
+    const id = req.params.id;  // id del platillo
+    console.log('todo bien');
+    const sql = 'SELECT from calificacion where id_usuario = $1 and id_platillo = $2';
+    const result  = await db.query(sql, [user_id, id]);
+    console.log(result);
+    if (result.rows) {
+      res.status(200).json({ok : 1});
+    } else {
+      res.status(200).json({ok: 0});
+    }
+  } catch (err) {
+    console.log(err); 
+    res.status(500).json({error: 'Error al obtener la calificacion o reaccion del platillo'});
+  }
+});
+exports.actualizarCalificacion = asyncHandler (async (req, res) => {
+  try {
+    const id = req.params.id; // id del platillo
+    const user = req.user.id;
+    console.log(user);
+
+    const aux = await db.query('SELECT from calificacion where id_usuario = $1 and id_platillo = $2', 
+      [user, id]);
+    let sql = 'insert into calificacion (id_usuario, id_platillo) values ($1, $2)';
+    if (aux.rows) {
+      sql = 'delete from calificacion where id_usuario = $1 and id_platillo = $2';
+    } 
+    const [result] = await db.query(sql, [user, id]);
+    res.status(200).json({message: 'modificado correctamente'});
+
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({message: 'Error en el servidor'});
+  }
+});
+exports.obtenerPlatillosCalificados = asyncHandler (async (req, res) => {
+  try {
+    const user = req.user.id; 
+    const sql = 'select * from platillo_tipico where id_platillo in (select id_platillo from calificacion where id_usuario = $1)'
+    const [result] = await db.query(sql, [user]);
+    res.status(200).json(result);
+  } catch (err) {
+    console.log(err); 
+    res.status(500).json({message: 'Error en el servidor'})
+  }
+});
+exports.obtenerEstadisticas = asyncHandler (async (req, res) => {
+  try {
+    const rol = req.user.rol; 
+    if (rol!='admin') {
+      res.status(400).json({message: 'Forbbiden'});
+      return;
+    }
+    const totalUsuarios = await db.one(
+      'SELECT COUNT(*) AS total_usuarios FROM usuario'
+    );
+    const likesMes = await db.any(
+      'SELECT TO_CHAR(month_series, \'Mon\') AS mes_abreviado, TO_CHAR(month_series, \'Month\') AS mes_completo, COUNT(calificacion.id) AS cantidad_likes FROM generate_series( date_trunc(\'year\', CURRENT_DATE)::date, date_trunc(\'year\', CURRENT_DATE)::date + interval \'11 months\', interval \'1 month\' ) AS month_series LEFT JOIN calificacion ON EXTRACT(MONTH FROM calificacion.tiempo) = EXTRACT(MONTH FROM month_series) WHERE EXTRACT(YEAR FROM month_series) = EXTRACT(YEAR FROM CURRENT_DATE) GROUP BY month_series ORDER BY month_series'
+    );
+    const result = {
+      totalUsuarios, 
+      likesMes
+    };
+    console.log(result);
+    res.status(200).json(result);
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({message: 'Error en el servidor'});
+  }
+});
