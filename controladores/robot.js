@@ -141,12 +141,6 @@ exports.modificar_platillo = asyncHandler(async (req, res) => {
 					message: 'Error en la base de datos'
 				})
 			}
-		}else{
-			res.status(500).json({
-				message: 'Error: El registro no existe'
-			})
-		}
-
 	} catch (err) {
 		console.log(err); 
 		res.status(500).json({
@@ -264,7 +258,6 @@ exports.login = asyncHandler(async (req, res) => {
     res.status(500).json({ message: 'Error en el servidor' });
   }
 });
-};
 
 exports.buscar_platillo = asyncHandler(async (req, res) => {
   try {
@@ -308,5 +301,3 @@ exports.obtener_posicion = asyncHandler(async (req, res) => {
     res.status(500).json({ error: 'Error interno del servidor' });
   }
 });
-
->>>>>>> Stashed changes

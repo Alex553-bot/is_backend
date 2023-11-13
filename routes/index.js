@@ -19,7 +19,7 @@ router.delete('/eliminarPlatillo/:id',validarToken, controlador.eliminar_platill
 
 router.get('/all',validarToken,controlador.listar);
 router.get('/buscarPlatillo',validarToken, controlador.buscar_platillo);
-router.get('/contarPlatillos',validarToken, controlador.obtener_cantidad_platillos);
+router.get('/contarPlatillos',validarToken, controlador.contarPlatillos);
 router.get('/obtener_pagina/:id',validarToken, controlador.obtener_posicion);
 router.post('/login' , controlador.login);
 
