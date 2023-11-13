@@ -227,37 +227,6 @@ exports.contarPlatillos = asyncHandler(async (req, res, next) => {
     }
 });
 
-//agregar tokens al inicio de sesion
-exports.login = asyncHandler(async (req, res) => {
-  const { email, password } = req.body;
-  const consult = 'SELECT id, email, password, rol FROM usuario WHERE email = $1 AND password = $2';
-
-  try {
-    const result = await db.oneOrNone(consult, [email, password]);
-
-    if (result) {
-      const { id, email, rol } = result;
-      
-      // Verificar si el usuario tiene el rol de "administrador"
-      const isAdmin = rol === 'administrador';
-
-      // Puedes personalizar la duración del token según el rol si lo deseas
-      const expiresIn = '15m';
-
-      const token = jwt.sign({ id, email, rol }, jwtSecret, {
-        expiresIn,
-      });
-
-      res.json({ token });
-    } else {
-      console.log('Credenciales incorrectas');
-      res.status(401).json({ message: 'Credenciales incorrectas' });
-    }
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Error en el servidor' });
-  }
-});
 
 exports.buscar_platillo = asyncHandler(async (req, res) => {
   try {
