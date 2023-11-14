@@ -156,12 +156,12 @@ exports.eliminar_platillo = asyncHandler(async (req, res, next) => {
 		//eliminar archivo
 		const sql1 = 'SELECT IMAGEN_PLATILLO,URL_VIDEO FROM platillo_tipico WHERE ID_PLATILLO = ?'; 
 
-		const [data] = await pool.query(sql1, id); 
+		const [data] = await db.query(sql1, id); 
 
 		const sql2 = 'DELETE FROM platillo_tipico WHERE ID_PLATILLO = ?'
-		const [result] = await pool.query(sql2 , [id]); 
+		const [result] = await db.query(sql2 , [id]); 
 		
-		if (result.affectedRows >0 ) {
+		if (result.rows) {
 
 			const nombreImagen = data[0].IMAGEN_PLATILLO;
 			const nombreVideo = data[0].URL_VIDEO;
@@ -213,7 +213,7 @@ exports.listar = asyncHandler(async (req, res, next) => {
 exports.contarPlatillos = asyncHandler(async (req, res, next) => {
     try {
         const sql = 'SELECT COUNT(*) AS total_platillos FROM platillo_tipico';
-        const [result] = await pool.query(sql);
+        const [result] = await db.query(sql);
 
         const totalPlatillos = result[0].total_platillos;
 
