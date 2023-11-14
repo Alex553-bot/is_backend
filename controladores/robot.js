@@ -150,41 +150,43 @@ exports.modificar_platillo = asyncHandler(async (req, res) => {
 	}
 });
 exports.eliminar_platillo = asyncHandler(async (req, res, next) => {
-	try {
-		let id = req.params.id; 
-		id = decodificar(id);
-		//eliminar archivo
-		const sql1 = 'SELECT IMAGEN_PLATILLO,URL_VIDEO FROM platillo_tipico WHERE ID_PLATILLO = ?'; 
-
-		const [data] = await db.query(sql1, id); 
-
-		const sql2 = 'DELETE FROM platillo_tipico WHERE ID_PLATILLO = ?'
-		const [result] = await db.query(sql2 , [id]); 
-		
-		if (result.rows) {
-
-			const nombreImagen = data[0].IMAGEN_PLATILLO;
-			const nombreVideo = data[0].URL_VIDEO;
-			//cambiar por la ruta de la imagen
-			const imagenAEliminar = `media/imagen/${nombreImagen}`;
-			const videoAEliminar = `media/video/${nombreVideo}`;
-			await eliminarArchivoSiExiste(imagenAEliminar);
-			await eliminarArchivoSiExiste(videoAEliminar);
-	  
-			res.status(200).json({
-				message: 'Platillo eliminado correctamente'
-			})
-		} else {
-			res.status(500).json({
-				message: 'Error en la base de datos'
-			})
-		}
-	} catch (err) {
-		console.error(err); 
-		res.status(500).json({
-			message: 'Error del servidor'
-		})
-	}
+  try {
+    let id = req.params.id;
+    id = decodificar(id);
+  
+    // Eliminar archivo
+    const sql1 = 'SELECT IMAGEN_PLATILLO, URL_VIDEO FROM platillo_tipico WHERE ID_PLATILLO = $1';
+  
+    const data = await db.one(sql1, id);
+  
+    const sql2 = 'DELETE FROM platillo_tipico WHERE ID_PLATILLO = $1 RETURNING *';
+    const result = await db.oneOrNone(sql2, id);
+  
+    if (result) {
+      const nombreImagen = data.IMAGEN_PLATILLO;
+      const nombreVideo = data.URL_VIDEO;
+  
+      // Cambiar por la ruta de la imagen
+      const imagenAEliminar = `media/imagen/${nombreImagen}`;
+      const videoAEliminar = `media/video/${nombreVideo}`;
+  
+      await eliminarArchivoSiExiste(imagenAEliminar);
+      await eliminarArchivoSiExiste(videoAEliminar);
+  
+      res.status(200).json({
+        message: 'Platillo eliminado correctamente'
+      });
+    } else {
+      res.status(500).json({
+        message: 'Error en la base de datos'
+      });
+    }
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({
+      message: 'Error del servidor'
+    });
+  }
 });
 
 // Listar todos los platillos
@@ -215,7 +217,7 @@ exports.contarPlatillos = asyncHandler(async (req, res, next) => {
         const sql = 'SELECT COUNT(*) AS total_platillos FROM platillo_tipico';
         const [result] = await db.query(sql);
 
-        const totalPlatillos = result[0].total_platillos;
+        const totalPlatillos = result.total_platillos;
 
         res.status(200).json({ total_platillos: totalPlatillos });
     } catch (err) {
