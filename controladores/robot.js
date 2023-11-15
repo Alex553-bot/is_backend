@@ -326,7 +326,7 @@ exports.obtenerPlatillosCalificados = asyncHandler (async (req, res) => {
 exports.obtenerEstadisticas = asyncHandler (async (req, res) => {
   try {
     const rol = req.user.rol; 
-    if (rol!='admin') {
+    if (rol!='administrador') {
       res.status(400).json({message: 'Forbbiden'});
       return;
     }
