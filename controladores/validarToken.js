@@ -1,5 +1,5 @@
 // validateToken.js
-const jwt = require('jsonwebtoken');
+const jwt = require('jsonwebtoken');//secret kev para la vcalidacion del token
 require('dotenv').config(); // Cargar variables de entorno
 
 const jwtSecret = process.env.JWT_SECRET;

@@ -248,7 +248,7 @@ exports.login = asyncHandler(async (req, res) => {
       const isAdmin = rol === 'administrador';
 
       // Puedes personalizar la duración del token según el rol si lo deseas
-      const expiresIn = '15m';
+      const expiresIn = '15m'; // tiempo de duracion de token 
 
       const token = jwt.sign({ id, email, rol }, jwtSecret, {
         expiresIn,
