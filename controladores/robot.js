@@ -324,11 +324,18 @@ exports.registro_usuario = asyncHandler(async (req, res) => {
       // Verificar si el correo tiene la extensión "@gmail.com"
       if (!email.endsWith('@gmail.com')) {
         return res.status(400).json({
-          message: 'Solo se permiten correos con la extensión gmail.',
+          message: 'Solo se permiten correos con la extensión "@gmail.com".',
         });
       }
 
-      // Si el correo electrónico no está registrado y tiene la extensión "@gmail.com", proceder con la inserción
+      // Verificar si el correo no contiene espacios en blanco ni comienza con un espacio en blanco
+      if (email.includes(' ') || email.startsWith(' ')) {
+        return res.status(400).json({
+          message: 'El correo electrónico no puede contener espacios en blanco ni comenzar con un espacio en blanco.',
+        });
+      }
+
+      // Si el correo electrónico no está registrado, tiene la extensión "@gmail.com", y no contiene espacios en blanco, proceder con la inserción
       let rol = 'cliente'; // Asignar por defecto el rol "cliente"
 
       // Insertar nuevo usuario sin el campo id
