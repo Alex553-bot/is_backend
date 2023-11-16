@@ -311,22 +311,34 @@ exports.obtener_posicion = asyncHandler(async (req, res) => {
 
 exports.registro_usuario = asyncHandler(async (req, res) => {
   try {
-    const { id, username, email, password } = req.body;
+    const { username, email, password } = req.body;
 
-    // Verificar si ya hay un administrador registrado
-    
-    let rol = 'cliente'; // Asignar por defecto el rol "cliente"
+    // Verificar si el correo electrónico del usuario ya está registrado
+    const emailExistente = await db.oneOrNone('SELECT id FROM usuario WHERE email = $1', email);
 
-    // Si no hay un administrador registrado, asignar el rol "administrador"
-    
+    if (emailExistente) {
+      return res.status(400).json({
+        message: 'El correo electrónico ya está registrado. Por favor, elige otro.',
+      });
+    } else {
+      // Verificar si el correo tiene la extensión "@gmail.com"
+      if (!email.endsWith('@gmail.com')) {
+        return res.status(400).json({
+          message: 'Solo se permiten correos con la extensión gmail.',
+        });
+      }
 
-    // Insertar nuevo usuario
-    const query = 'INSERT INTO usuario(id, username, email, password, rol) VALUES($1, $2, $3, $4, $5)';
-    await db.none(query, [id, username, email, password, rol]);
+      // Si el correo electrónico no está registrado y tiene la extensión "@gmail.com", proceder con la inserción
+      let rol = 'cliente'; // Asignar por defecto el rol "cliente"
 
-    res.status(201).json({
-      message: 'Usuario registrado correctamente',
-    });
+      // Insertar nuevo usuario sin el campo id
+      const query = 'INSERT INTO usuario(username, email, password, rol) VALUES($1, $2, $3, $4)';
+      await db.none(query, [username, email, password, rol]);
+
+      res.status(201).json({
+        message: 'Usuario registrado correctamente',
+      });
+    }
   } catch (err) {
     console.error(err);
     res.status(500).json({
