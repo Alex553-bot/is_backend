@@ -292,26 +292,33 @@ exports.obtenerCalificacion = asyncHandler (async (req, res) => {
     res.status(500).json({error: 'Error al obtener la calificacion o reaccion del platillo'});
   }
 });
-exports.actualizarCalificacion = asyncHandler (async (req, res) => {
+exports.actualizarCalificacion = asyncHandler(async (req, res) => {
   try {
     const id = req.params.id; // id del platillo
     const user = req.user.id;
     console.log(user);
 
-    const aux = await db.query('SELECT from calificacion where id_usuario = $1 and id_platillo = $2', 
+    const aux = await db.query('SELECT * FROM calificacion WHERE id_usuario = $1 AND id_platillo = $2', 
       [user, id]);
-    let sql = 'insert into calificacion (id_usuario, id_platillo) values ($1, $2)';
-    if (aux.rows) {
-      sql = 'delete from calificacion where id_usuario = $1 and id_platillo = $2';
+    
+    let sql = 'INSERT INTO calificacion (id_usuario, id_platillo) VALUES ($1, $2)';
+    
+    console.log(aux);
+    if (aux.length > 0) {
+      sql = 'DELETE FROM calificacion WHERE id_usuario = $1 AND id_platillo = $2';
     } 
+
+    console.log(sql);
+    
     const [result] = await db.query(sql, [user, id]);
-    res.status(200).json({message: 'modificado correctamente'});
+    res.status(200).json({ message: 'modificado correctamente' });
 
   } catch (err) {
     console.log(err);
-    res.status(500).json({message: 'Error en el servidor'});
+    res.status(500).json({ message: 'Error en el servidor' });
   }
 });
+
 exports.obtenerPlatillosCalificados = asyncHandler (async (req, res) => {
   try {
     const user = req.user.id; 
