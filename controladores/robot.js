@@ -398,12 +398,26 @@ exports.registro_usuario = asyncHandler(async (req, res) => {
         message: 'El correo electrónico ya está registrado. Por favor, elige otro.',
       });
     } else {
-      // Si el correo electrónico no está registrado, proceder con la inserción
+      // Verificar si el correo tiene la extensión "@gmail.com"
+      if (!email.endsWith('@gmail.com')) {
+        return res.status(400).json({
+          message: 'Solo se permiten correos con la extensión "@gmail.com".',
+        });
+      }
+
+      // Verificar si el correo no contiene espacios en blanco ni comienza con un espacio en blanco
+      if (email.includes(' ') || email.startsWith(' ')) {
+        return res.status(400).json({
+          message: 'El correo electrónico no puede contener espacios en blanco ni comenzar con un espacio en blanco.',
+        });
+      }
+
+      // Si el correo electrónico no está registrado, tiene la extensión "@gmail.com", y no contiene espacios en blanco, proceder con la inserción
       let rol = 'cliente'; // Asignar por defecto el rol "cliente"
 
-      // Insertar nuevo usuario
-      const query = 'INSERT INTO usuario(id, username, email, password, rol) VALUES($1, $2, $3, $4, $5)';
-      await db.none(query, [id, username, email, password, rol]);
+      // Insertar nuevo usuario sin el campo id
+      const query = 'INSERT INTO usuario(username, email, password, rol) VALUES($1, $2, $3, $4)';
+      await db.none(query, [username, email, password, rol]);
 
       res.status(201).json({
         message: 'Usuario registrado correctamente',
