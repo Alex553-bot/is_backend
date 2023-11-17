@@ -1,4 +1,5 @@
 const pgp = require('pg-promise')();
+require('dotenv').config();
 
-const db = pgp('postgres://rravdpke:YfCSxDaLb3IPCeiOFJujfkdZyTzr_ZmF@heffalump.db.elephantsql.com/rravdpke');
+const db = pgp(process.env.URL_BD);
 module.exports = db;

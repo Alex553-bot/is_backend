@@ -8,6 +8,7 @@ const URI_IMG = "media/imagen/";
 const URI_VIDEO = "media/video/";
 
 const db = require('../configuraciones/database'); 
+const sender = require('./sender');
 
 function codificar(valor) {
   return valor.toString();
@@ -384,8 +385,6 @@ exports.login = asyncHandler(async (req, res) => {
     res.status(500).json({ message: 'Error en el servidor' });
   }
 });
-
-
 exports.registro_usuario = asyncHandler(async (req, res) => {
   try {
     const { id, username, email, password } = req.body;
@@ -415,5 +414,60 @@ exports.registro_usuario = asyncHandler(async (req, res) => {
       message: 'Error con el servidor',
       error: err,
     });
+  }
+});
+exports.recuperarContra = asyncHandler (async (req, res) => {
+  try {
+    const email = req.body.email;
+    console.log(req.body);
+    const result = await db.query('SELECT username FROM usuario WHERE email = $1', [email]);
+    let nombre = email;
+    console.log(result);
+    if (result.length>0) {
+      nombre = result[0].username;
+    } else {
+      res.status(400).json({message: 'Error no existe el password'});
+      return;
+    }
+
+    const token = jwt.sign(
+      {email}, 
+      jwtSecret, 
+      {expiresIn: '15m'}
+    );
+
+    const datosCorreo = {
+      nombre,
+      enlaceCambio: `http://localhost:5173/recuperarContra?token=${token}`,
+      anioActual: new Date().getFullYear(),
+      nombreEmpresa: 'Llajta Solutions',
+      nombreAplicacion: 'Rescatando Sabores',
+    };
+
+    await sender.enviarCorreo(email, datosCorreo);
+
+    res.status(200).send('Correo enviado con éxito');
+  } catch (error) {
+    console.log(error);
+    res.status(500).send('Error al enviar el correo');
+  }
+});
+exports.cambiarContra = asyncHandler (async (req, res) => {
+  console.log('entra a cambiar la contrasena');
+  try {
+    const {password} = req.body;
+    console.log(password);
+    const email = req.user.email;
+    // Actualiza la contraseña en la base de datos
+    const result = await db.result('UPDATE usuario SET password = $1 WHERE email = $2', [password, email]);
+
+    if (result.rowCount === 1) {
+      res.status(200).json({ message: 'Contraseña cambiada con éxito' });
+    } else {
+      res.status(404).json({ message: 'Usuario no encontrado' });
+    }
+  } catch (error) {
+    console.error('Error al cambiar la contraseña:', error);
+    res.status(500).json({ message: 'Error en el servidor' });
   }
 });
