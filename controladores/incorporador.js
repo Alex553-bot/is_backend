@@ -39,7 +39,7 @@ exports.login = asyncHandler(async (req, res) => {
 });
 exports.registro_usuario = asyncHandler(async (req, res) => {
   try {
-    const { id, username, email, password } = req.body;
+    const { username, email, password } = req.body;
 
     // Verificar si el correo electrónico del usuario ya está registrado
     const emailExistente = await db.oneOrNone('SELECT id FROM usuario WHERE email = $1', email);
@@ -49,6 +49,15 @@ exports.registro_usuario = asyncHandler(async (req, res) => {
         message: 'El correo electrónico ya está registrado. Por favor, elige otro.',
       });
     } else {
+      // Verificar si el username ya está registrado
+      const usernameExistente = await db.oneOrNone('SELECT id FROM usuario WHERE username = $1', username);
+
+      if (usernameExistente) {
+        return res.status(400).json({
+          message: 'El username ya está registrado. Por favor, elige otro.',
+        });
+      }
+
       // Verificar si el correo tiene la extensión "@gmail.com"
       if (!email.endsWith('@gmail.com')) {
         return res.status(400).json({
@@ -63,10 +72,10 @@ exports.registro_usuario = asyncHandler(async (req, res) => {
         });
       }
 
-      // Si el correo electrónico no está registrado, tiene la extensión "@gmail.com", y no contiene espacios en blanco, proceder con la inserción
+      // Si el correo electrónico y el username no están registrados, y el correo tiene la extensión "@gmail.com", proceder con la inserción
       let rol = 'cliente'; // Asignar por defecto el rol "cliente"
 
-      // Insertar nuevo usuario sin el campo id
+      // Insertar nuevo usuario
       const query = 'INSERT INTO usuario(username, email, password, rol) VALUES($1, $2, $3, $4)';
       await db.none(query, [username, email, password, rol]);
 
