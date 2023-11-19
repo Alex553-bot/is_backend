@@ -8,13 +8,13 @@ const sender = require('./sender');
 
 exports.login = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
-  const consult = 'SELECT id, email, password, rol FROM usuario WHERE email = $1 AND password = $2';
+  const consult = 'SELECT id, username, email, password, rol FROM usuario WHERE email = $1 AND password = $2';
 
   try {
     const result = await db.oneOrNone(consult, [email, password]);
 
     if (result) {
-      const { id, email, rol } = result;
+      const { id, username, email, rol } = result;
       
       // Verificar si el usuario tiene el rol de "administrador"
       const isAdmin = rol === 'administrador';
@@ -22,11 +22,12 @@ exports.login = asyncHandler(async (req, res) => {
       // Puedes personalizar la duración del token según el rol si lo deseas
       const expiresIn = '15m';
 
-      const token = jwt.sign({ id, email, rol }, jwtSecret, {
+      const token = jwt.sign({ id, username, email, rol }, jwtSecret, {
         expiresIn,
       });
 
-      res.json({ token });
+      // Devolver username, correo, rol y token en la respuesta
+      res.json({ username, email, rol, token });
     } else {
       console.log('Credenciales incorrectas');
       res.status(401).json({ message: 'Credenciales incorrectas' });
