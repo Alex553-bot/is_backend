@@ -72,6 +72,13 @@ exports.registro_usuario = asyncHandler(async (req, res) => {
         });
       }
 
+      // Verificar si la contraseña contiene espacios en blanco
+      if (password.includes(' ') || password.startsWith(' ')) {
+        return res.status(400).json({
+          message: 'La contraseña no puede contener espacios en blanco.',
+        });
+      }
+
       // Si el correo electrónico y el username no están registrados, y el correo tiene la extensión "@gmail.com", proceder con la inserción
       let rol = 'cliente'; // Asignar por defecto el rol "cliente"
 
