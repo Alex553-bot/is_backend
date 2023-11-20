@@ -123,14 +123,12 @@ exports.obtener_posicion = asyncHandler(async (req, res) => {
 
 exports.obtenerCalificacion = asyncHandler (async (req, res) => {
   try {
-    console.log(req.user);
     const user_id = req.user.id; 
     const id = req.params.id;  // id del platillo
-    console.log('todo bien');
     const sql = 'SELECT from calificacion where id_usuario = $1 and id_platillo = $2';
     const result  = await db.query(sql, [user_id, id]);
     console.log(result);
-    if (result.rows) {
+    if (result.length>0) {
       res.status(200).json({ok : 1});
     } else {
       res.status(200).json({ok: 0});
