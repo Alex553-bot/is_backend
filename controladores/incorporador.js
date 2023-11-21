@@ -80,11 +80,10 @@ exports.registro_usuario = asyncHandler(async (req, res) => {
       }
 
       // Si el correo electrónico y el username no están registrados, y el correo tiene la extensión "@gmail.com", proceder con la inserción
-      let rol = 'cliente'; // Asignar por defecto el rol "cliente"
 
       // Insertar nuevo usuario
-      const query = 'INSERT INTO usuario(username, email, password, rol) VALUES($1, $2, $3, $4)';
-      await db.none(query, [username, email, password, rol]);
+      const query = 'INSERT INTO usuario(username, email, password) VALUES($1, $2, $3)';
+      await db.none(query, [username, email, password]);
 
       res.status(201).json({
         message: 'Usuario registrado correctamente',
@@ -120,7 +119,7 @@ exports.recuperarContra = asyncHandler (async (req, res) => {
 
     const datosCorreo = {
       nombre,
-      enlaceCambio: `http://localhost:5173/recuperarContra?token=${token}`,
+      enlaceCambio: `http://localhost:5173/recuperarContra/${token}`,
       anioActual: new Date().getFullYear(),
       nombreEmpresa: 'Llajta Solutions',
       nombreAplicacion: 'Rescatando Sabores',

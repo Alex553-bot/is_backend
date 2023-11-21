@@ -2,6 +2,10 @@ const asyncHandler = require('express-async-handler');
 
 const db = require('../configuraciones/database'); 
 
+function codificar(x) {
+  return x;
+}
+
 exports.obtener_platillo = asyncHandler(async (req, res, next) => {
   try {
     const id = req.params.id;
@@ -121,21 +125,35 @@ exports.obtener_posicion = asyncHandler(async (req, res) => {
   }
 });
 
-exports.obtenerCalificacion = asyncHandler (async (req, res) => {
+exports.obtenerCalificacion = asyncHandler(async (req, res) => {
   try {
-    const user_id = req.user.id; 
-    const id = req.params.id;  // id del platillo
-    const sql = 'SELECT from calificacion where id_usuario = $1 and id_platillo = $2';
-    const result  = await db.query(sql, [user_id, id]);
-    console.log(result);
-    if (result.length>0) {
-      res.status(200).json({ok : 1});
+    const user_id = req.user.id;
+    const id = req.params.id; // id del platillo
+
+    // Obtener la calificación actual del usuario para el platillo
+    const calificacionSql = 'SELECT * FROM calificacion WHERE id_usuario = $1 AND id_platillo = $2';
+    const calificacionResult = await db.query(calificacionSql, [user_id, id]);
+
+    // Obtener la cantidad total de likes para el platillo
+    const cantidadLikesSql = 'SELECT COUNT(*) AS cantidadLikes FROM calificacion WHERE id_platillo = $1';
+    const cantidadLikesResult = await db.query(cantidadLikesSql, [id]);
+    const cantidadLikes = cantidadLikesResult[0].cantidadlikes;
+
+    if (calificacionResult.length > 0) {
+      // Incluye información adicional en la respuesta JSON
+      res.status(200).json({ 
+          ok: 1, 
+          nro: cantidadLikes 
+        });
     } else {
-      res.status(200).json({ok: 0});
+      res.status(200).json({ 
+          ok: 0, 
+          nro: cantidadLikes 
+        });
     }
   } catch (err) {
-    console.log(err); 
-    res.status(500).json({error: 'Error al obtener la calificacion o reaccion del platillo'});
+    console.log(err);
+    res.status(500).json({ error: 'Error al obtener la calificación o reacción del platillo' });
   }
 });
 exports.actualizarCalificacion = asyncHandler(async (req, res) => {
