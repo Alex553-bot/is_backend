@@ -54,6 +54,13 @@ exports.registro_usuario = asyncHandler(async (req, res) => {
       });
     }
 
+     // Verificar caracteres especiales en el username
+    if (!/^[a-zA-Z0-9]+$/.test(username)) {
+      return res.status(400).json({
+        message: 'El username no puede contener caracteres especiales.',
+      });
+    }
+
     // Verificar si el correo electrónico del usuario ya está registrado
     const emailExistente = await db.oneOrNone('SELECT id FROM usuario WHERE email = $1', email);
 
