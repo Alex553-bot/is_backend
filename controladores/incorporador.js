@@ -48,6 +48,12 @@ exports.registro_usuario = asyncHandler(async (req, res) => {
       });
     }
 
+    if (/\s/.test(username)) {
+      return res.status(400).json({
+        message: 'El username no puede contener espacios en blanco.',
+      });
+    }
+
     // Verificar si el correo electrónico del usuario ya está registrado
     const emailExistente = await db.oneOrNone('SELECT id FROM usuario WHERE email = $1', email);
 
