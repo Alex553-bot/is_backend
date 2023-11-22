@@ -40,6 +40,13 @@ exports.login = asyncHandler(async (req, res) => {
 exports.registro_usuario = asyncHandler(async (req, res) => {
   try {
     const { username, email, password } = req.body;
+    
+    // Verificar longitud mínima del username
+    if (username.length < 4) {
+      return res.status(400).json({
+        message: 'El username debe tener al menos 4 caracteres.',
+      });
+    }
 
     // Verificar si el correo electrónico del usuario ya está registrado
     const emailExistente = await db.oneOrNone('SELECT id FROM usuario WHERE email = $1', email);
