@@ -42,9 +42,9 @@ exports.registro_usuario = asyncHandler(async (req, res) => {
     const { username, email, password } = req.body;
     
     // Verificar longitud mínima del username
-    if (username.length < 4) {
+    if (username.length < 4 || username.length > 20) {
       return res.status(400).json({
-        message: 'El username debe tener al menos 4 caracteres.',
+        message: 'El username debe tener entre 4 y 20 caracteres.',
       });
     }
 
