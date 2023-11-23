@@ -20,7 +20,7 @@ exports.login = asyncHandler(async (req, res) => {
       const isAdmin = rol === 'administrador';
 
       // Puedes personalizar la duración del token según el rol si lo deseas
-      const expiresIn = '15m';
+      const expiresIn = '24h';
 
       const token = jwt.sign({ id, username, email, rol }, jwtSecret, {
         expiresIn,
@@ -134,12 +134,15 @@ exports.recuperarContra = asyncHandler (async (req, res) => {
     const token = jwt.sign(
       {email}, 
       jwtSecret, 
-      {expiresIn: '15m'}
+      {expiresIn: '5m'}
     );
+
+    const tokenCodificado = btoa(token);
+    console.log(tokenCodificado);
 
     const datosCorreo = {
       nombre,
-      enlaceCambio: `http://localhost:5173/recuperarContra/${token}`,
+      enlaceCambio: `http://localhost:5173/recuperarContra/${tokenCodificado}`,
       anioActual: new Date().getFullYear(),
       nombreEmpresa: 'Llajta Solutions',
       nombreAplicacion: 'Rescatando Sabores',
