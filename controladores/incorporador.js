@@ -40,6 +40,26 @@ exports.login = asyncHandler(async (req, res) => {
 exports.registro_usuario = asyncHandler(async (req, res) => {
   try {
     const { username, email, password } = req.body;
+    
+    // Verificar longitud mínima del username
+    if (username.length < 4 || username.length > 20) {
+      return res.status(400).json({
+        message: 'El username debe tener entre 4 y 20 caracteres.',
+      });
+    }
+
+    if (/\s/.test(username)) {
+      return res.status(400).json({
+        message: 'El username no puede contener espacios en blanco.',
+      });
+    }
+
+     // Verificar caracteres especiales en el username
+    if (!/^[a-zA-Z0-9]+$/.test(username)) {
+      return res.status(400).json({
+        message: 'El username no puede contener caracteres especiales.',
+      });
+    }
 
     // Verificar si el correo electrónico del usuario ya está registrado
     const emailExistente = await db.oneOrNone('SELECT id FROM usuario WHERE email = $1', email);
