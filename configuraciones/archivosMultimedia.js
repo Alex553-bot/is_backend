@@ -63,15 +63,16 @@ const upload = multer({
         callback(new Error('Formato de video no válido. Solo se permite MP4 con un tamaño máximo de 900 MB.'));
       }
     } else {
-      callback(new Error('Campo de archivo no reconocido.'));
+      //callback(new Error('Campo de archivo no reconocido.'));
+      callback(null, true);
     }
   },
   limits: {
     fieldSize: 900 * 1024 * 1024, // Limita el tamaño total de todos los archivos a 900 MB
   },
 }).fields([
-  { name: 'imagen', maxCount: 1 },
-  { name: 'video', maxCount: 1 },
+  { name: 'imagen', maxCount: 1, minCount: 0 },
+  { name: 'video', maxCount: 1 , minCount: 0},
 ]);
 
 module.exports = upload;
