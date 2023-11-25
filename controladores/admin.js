@@ -91,15 +91,15 @@ exports.modificar_platillo = asyncHandler(async (req, res) => {
     const sql = 'UPDATE platillo_tipico SET titulo_platillo = $1, descripcion_platillo = $2, imagen_platillo = $3, url_video = $4 WHERE id_platillo = $5';
     const result = await db.query(sql, [nombre, descripcion, IMAGEN_PLATILLO, URL_VIDEO, id]); 
 
-            if (result.affectedRows >0 ) {
+            //if (result.affectedRows >0 ) {
                 res.status(200).json({
                     message: 'Platillo modificado correctamente'
                 })
-            } else {
-                res.status(500).json({
-                    message: 'Error en la base de datos'
-                })
-            }
+            //} else {
+            //    res.status(500).json({
+            //        message: 'Error en la base de datos'
+            //    })
+            //}
     } catch (err) {
         console.log(err); 
         res.status(500).json({
