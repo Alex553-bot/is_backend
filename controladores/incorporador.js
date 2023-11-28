@@ -1,5 +1,6 @@
 const asyncHandler = require('express-async-handler');
 const jwt = require('jsonwebtoken');
+const bcrypt = require('bcrypt');
 require('dotenv').config();
 const jwtSecret = process.env.JWT_SECRET;
 
@@ -8,29 +9,37 @@ const sender = require('./sender');
 
 exports.login = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
-  const consult = 'SELECT id, username, email, password, rol FROM usuario WHERE email = $1 AND password = $2';
+  const consult = 'SELECT id, username, email, password, rol FROM usuario WHERE email = $1';
 
   try {
-    const result = await db.oneOrNone(consult, [email, password]);
+    const user = await db.oneOrNone(consult, [email]);
 
-    if (result) {
-      const { id, username, email, rol } = result;
-      
-      // Verificar si el usuario tiene el rol de "administrador"
-      const isAdmin = rol === 'administrador';
+    if (user) {
+      const { id, username, email, password: hashedPassword, rol } = user;
 
-      // Puedes personalizar la duración del token según el rol si lo deseas
-      const expiresIn = '15m';
+      // Compara la contraseña proporcionada con la almacenada en su forma encriptada
+      const passwordMatch = await bcrypt.compare(password, hashedPassword);
 
-      const token = jwt.sign({ id, username, email, rol }, jwtSecret, {
-        expiresIn,
-      });
+      if (passwordMatch) {
+        // Verificar si el usuario tiene el rol de "administrador"
+        const isAdmin = rol === 'administrador';
 
-      // Devolver username, correo, rol y token en la respuesta
-      res.json({ username, email, rol, token });
+        // Puedes personalizar la duración del token según el rol si lo deseas
+        const expiresIn = '15m';
+
+        const token = jwt.sign({ id, username, email, rol }, jwtSecret, {
+          expiresIn,
+        });
+
+        // Devolver username, correo, rol y token en la respuesta
+        res.json({ username, email, rol, token });
+      } else {
+        console.log('Credenciales incorrectas');
+        res.status(401).json({ message: 'Credenciales incorrectas' });
+      }
     } else {
-      console.log('Credenciales incorrectas');
-      res.status(401).json({ message: 'Credenciales incorrectas' });
+      console.log('Usuario no encontrado');
+      res.status(404).json({ message: 'Usuario no encontrado' });
     }
   } catch (error) {
     console.error(error);
@@ -40,7 +49,7 @@ exports.login = asyncHandler(async (req, res) => {
 exports.registro_usuario = asyncHandler(async (req, res) => {
   try {
     const { username, email, password } = req.body;
-    
+
     // Verificar longitud mínima del username
     if (username.length < 4 || username.length > 20) {
       return res.status(400).json({
@@ -54,7 +63,7 @@ exports.registro_usuario = asyncHandler(async (req, res) => {
       });
     }
 
-     // Verificar caracteres especiales en el username
+    // Verificar caracteres especiales en el username
     if (!/^[a-zA-Z0-9]+$/.test(username)) {
       return res.status(400).json({
         message: 'El username no puede contener caracteres especiales.',
@@ -92,12 +101,19 @@ exports.registro_usuario = asyncHandler(async (req, res) => {
         });
       }
 
-      // Si el correo electrónico y el username no están registrados, y el correo tiene la extensión "@gmail.com", proceder con la inserción
-      let rol = 'cliente'; // Asignar por defecto el rol "cliente"
+      // Verificar si la contraseña contiene espacios en blanco
+      if (password.includes(' ') || password.startsWith(' ')) {
+        return res.status(400).json({
+          message: 'La contraseña no puede contener espacios en blanco.',
+        });
+      }
 
-      // Insertar nuevo usuario
-      const query = 'INSERT INTO usuario(username, email, password, rol) VALUES($1, $2, $3, $4)';
-      await db.none(query, [username, email, password, rol]);
+      // Encriptar la contraseña antes de almacenarla en la base de datos
+      const hashedPassword = await bcrypt.hash(password, 10);
+
+      // Insertar nuevo usuario con la contraseña encriptada
+      const query = 'INSERT INTO usuario(username, email, password) VALUES($1, $2, $3)';
+      await db.none(query, [username, email, hashedPassword]);
 
       res.status(201).json({
         message: 'Usuario registrado correctamente',
@@ -111,6 +127,7 @@ exports.registro_usuario = asyncHandler(async (req, res) => {
     });
   }
 });
+
 exports.recuperarContra = asyncHandler (async (req, res) => {
   try {
     const email = req.body.email;
